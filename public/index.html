@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>High School Planner AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7d0a4;
+      --card: #fff8f0;
+      --border: #f7d0a4;
+      --accent: #f07830;
+      --accent-light: #fde8d8;
+      --accent-muted: #f8c49a;
+      --text: #2d1f0e;
+      --text-soft: #8a6e57;
+      --input-bg: #fff;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sora', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px 60px;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 36px;
+    }
+
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--accent);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      font-weight: 300;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-bottom: 16px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+      font-weight: 400;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent-muted);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* File upload */
+    .file-upload {
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .file-upload:hover { border-color: var(--accent-muted); background: var(--accent-light); }
+    .file-upload input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .file-upload .upload-icon { font-size: 1.3rem; margin-bottom: 4px; }
+    .file-upload .upload-label { font-size: 0.8rem; color: var(--text-soft); }
+    .file-upload .file-name { font-size: 0.8rem; color: var(--accent); margin-top: 4px; font-weight: 500; }
+
+    /* Chip toggles */
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      cursor: pointer;
+      background: var(--input-bg);
+      color: var(--text-soft);
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-top: 4px;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Output */
+    #output-card {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-top: 16px;
+    }
+
+    #output-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    #output-content {
+      font-size: 0.87rem;
+      line-height: 1.75;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* Tables inside output */
+    #output-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.83rem;
+    }
+    #output-content th {
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    #output-content td {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+    }
+    #output-content tr:nth-child(even) td { background: #fdf0e5; }
+    #output-content strong { color: var(--accent); }
+    #output-content h3 { margin: 14px 0 6px; font-size: 0.9rem; }
+
+    .loader {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid #fff6;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      color: #c0392b;
+      font-size: 0.82rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>High School Planner AI</h1>
+  </header>
+
+  <!-- About You -->
+  <div class="card">
+    <div class="section-label">About You</div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>Current Grade</label>
+        <select id="grade">
+          <option value="8">8th (entering HS)</option>
+          <option value="9" selected>9th Grade</option>
+          <option value="10">10th Grade</option>
+          <option value="11">11th Grade</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Current GPA (approx.)</label>
+        <select id="gpa">
+          <option value="below 2.5">Below 2.5</option>
+          <option value="2.5–3.0">2.5 – 3.0</option>
+          <option value="3.0–3.5">3.0 – 3.5</option>
+          <option value="3.5–3.9" selected>3.5 – 3.9</option>
+          <option value="4.0+">4.0 +</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dream Career / Major</label>
+      <input id="major" type="text" placeholder="e.g. Computer Science, Nursing, Film, Business…" />
+    </div>
+
+    <div class="field">
+      <label>College Goal</label>
+      <select id="collegeGoal">
+        <option value="community college">Community College</option>
+        <option value="Cal State / state school" selected>Cal State / State School</option>
+        <option value="UC system">UC System</option>
+        <option value="private / top 50">Private / Top 50</option>
+        <option value="Ivy League / elite">Ivy League / Elite</option>
+        <option value="not sure yet">Not Sure Yet</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Academics -->
+  <div class="card">
+    <div class="section-label">Academics</div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>AP Classes Wanted</label>
+        <select id="APs">
+          <option value="0">0 — not interested</option>
+          <option value="1–2" selected>1–2 per year</option>
+          <option value="3–4">3–4 per year</option>
+          <option value="5+">5+ per year</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Honors Classes?</label>
+        <select id="honors">
+          <option value="yes, as many as possible">Yes, as many as possible</option>
+          <option value="yes, a few" selected>Yes, a few</option>
+          <option value="no preference">No preference</option>
+          <option value="no, standard only">No, standard only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Strong Subjects</label>
+      <div class="chips" id="strongSubjects">
+        <span class="chip" data-val="Math">Math</span>
+        <span class="chip" data-val="Science">Science</span>
+        <span class="chip" data-val="English">English</span>
+        <span class="chip" data-val="History">History</span>
+        <span class="chip" data-val="Art">Art</span>
+        <span class="chip" data-val="Languages">Languages</span>
+        <span class="chip" data-val="PE / Sports">PE / Sports</span>
+        <span class="chip" data-val="Computer Science">CS</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Weak / Disliked Subjects</label>
+      <div class="chips" id="weakSubjects">
+        <span class="chip" data-val="Math">Math</span>
+        <span class="chip" data-val="Science">Science</span>
+        <span class="chip" data-val="English">English</span>
+        <span class="chip" data-val="History">History</span>
+        <span class="chip" data-val="Art">Art</span>
+        <span class="chip" data-val="Languages">Languages</span>
+        <span class="chip" data-val="PE / Sports">PE / Sports</span>
+        <span class="chip" data-val="Computer Science">CS</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Course Catalog (PDF, optional)</label>
+      <div class="file-upload">
+        <input type="file" id="courseCatalog" accept=".pdf,.txt" onchange="showFileName(this)" />
+        <div class="upload-icon">📄</div>
+        <div class="upload-label">Upload your school's course catalog</div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extras -->
+  <div class="card">
+    <div class="section-label">Comments Concerns?</div>
+
+    <div class="field">
+      <label>Anything special?</label>
+      <textarea id="notes" placeholder="e.g. I struggle with time management, I want to take a gap year, I'm interested in dual enrollment…"></textarea>
+    </div>
+  </div>
+
+  <button class="btn" onclick="generate()" id="genBtn">Generate My Plan</button>
+  <p class="error-msg" id="errorMsg"></p>
+
+  <div id="output-card">
+    <h2>Your High School Plan</h2>
+    <div id="output-content"></div>
+  </div>
+
+</div>
+
+<script>
+  // Chip toggle logic
+  document.querySelectorAll('.chips').forEach(group => {
+    group.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+  });
+
+  function showFileName(input) {
+    document.getElementById('fileName').textContent = input.files[0]?.name || '';
+  }
+
+  function getChips(groupId) {
+    return [...document.querySelectorAll(`#${groupId} .chip.active`)]
+      .map(c => c.dataset.val).join(', ') || 'none selected';
+  }
+
+  async function readFileAsBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function generate() {
+    const btn = document.getElementById('genBtn');
+    const errorEl = document.getElementById('errorMsg');
+    const outputCard = document.getElementById('output-card');
+    const outputContent = document.getElementById('output-content');
+    errorEl.textContent = '';
+
+    const grade = document.getElementById('grade').value;
+    const gpa = document.getElementById('gpa').value;
+    const major = document.getElementById('major').value.trim() || 'undecided';
+    const collegeGoal = document.getElementById('collegeGoal').value;
+    const APs = document.getElementById('APs').value;
+    const honors = document.getElementById('honors').value;
+    const strongSubjects = getChips('strongSubjects');
+    const weakSubjects = getChips('weakSubjects');
+    const notes = document.getElementById('notes').value.trim();
+    const catalogFile = document.getElementById('courseCatalog').files[0];
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span>Building your plan…';
+
+    let messages;
+
+    const userPrompt = `
+Please create a personalized high school course plan for this student. Format your response clearly with a year-by-year table (use HTML table tags), then add brief recommendations and tips.
+
+**Student Profile:**
+- Current grade: ${grade}th grade
+- GPA: ${gpa}
+- Dream career / major: ${major}
+- College goal: ${collegeGoal}
+- AP classes wanted: ${APs}
+- Honors classes: ${honors}
+- Strong subjects: ${strongSubjects}
+- Weak / disliked subjects: ${weakSubjects}
+- Additional notes: ${notes || 'none'}
+
+${catalogFile ? 'A course catalog has been uploaded — use it to suggest specific real courses when possible.' : ''}
+
+Provide:
+1. A year-by-year course table from their current grade through 12th grade (columns: Year, Core Classes, Electives, AP/Honors, Extracurriculars)
+2. 3–5 short strategic tips tailored to their goals
+3. A one-sentence motivational closer
+
+Keep it clear, practical, and encouraging. Use <strong> for important points.
+`.trim();
+
+    try {
+      if (catalogFile && catalogFile.type === 'application/pdf') {
+        const base64Data = await readFileAsBase64(catalogFile);
+        messages = [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
+            { type: 'text', text: userPrompt }
+          ]
+        }];
+      } else {
+        messages = [{ role: 'user', content: userPrompt }];
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1800,
+          system: 'You are a high school academic counselor who specializes in helping students plan their 4-year course load aligned with their career goals and college aspirations. You are warm, direct, and practical. Format your responses with HTML tables and <strong> tags for emphasis. Do not use markdown code fences.',
+          messages
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) throw new Error(data.error.message);
+
+      const text = data.content?.find(b => b.type === 'text')?.text || 'No response generated.';
+
+      outputContent.innerHTML = text;
+      outputCard.style.display = 'block';
+      outputCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      errorEl.textContent = 'Something went wrong: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Generate My Plan';
+    }
+  }
+</script>
+</body>
+</html>
