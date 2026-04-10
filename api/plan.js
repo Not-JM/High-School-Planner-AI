@@ -52,9 +52,10 @@ Do NOT use markdown, backticks, or code fences.`
     res.json({ text: msg.choices[0].message.content })
 
   } catch (err) {
-    console.error('Error:', err.message)
-    res.status(500).json({ error: err.message })
-  }
+  console.error('Full error:', err)
+  res.status(500).json({ error: err.message ?? String(err) })
+    }es.status(500).json({ error: err.message })
+  
 })
 
 // ✅ THIS is what Vercel needs — export the app, don't call app.listen()
