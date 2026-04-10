@@ -58,4 +58,4 @@ Do NOT use markdown, backticks, or code fences.`
 })
 
 // ✅ THIS is what Vercel needs — export the app, don't call app.listen()
-module.exports = app
+module.exports = (req, res) => app(req, res)
